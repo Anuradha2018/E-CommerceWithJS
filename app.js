@@ -26,7 +26,7 @@ class Products {
         return { title, price, id, image };
       });
       return products;
-      console.log(error);
+      // console.log(error);
     } catch {
       console.log(error);
     }
@@ -57,7 +57,7 @@ class UI {
     productsDOM.innerHTML = result;
   }
   getBagButtons() {
-    const buttons = [...document.querySelectorAll(".bag-btn")];
+    let buttons = [...document.querySelectorAll(".bag-btn")];
     buttonsDOM = buttons;
     // console.log(buttons);
     // retrieving id to display individual product
@@ -78,7 +78,7 @@ class UI {
         // add product to the cart
         let cartItem = { ...Storage.getProducts(id), amount: 1 };
         cart = [...cart, cartItem];
-        console.log(cart);
+        // console.log(cart);
         // save cart in local storage
         Storage.saveCart(cart);
         // update items in cart and cart total
@@ -107,7 +107,7 @@ class UI {
     div.innerHTML = `<img src=${item.image} alt="product" />
     <div>
       <h4>${item.title}</h4>
-      <h5>$${item.title}</h5>
+      <h5>$${item.price}</h5>
       <span class="remove-item" data-id=${item.id}>remove</span>
     </div>
     <div>
@@ -128,6 +128,30 @@ class UI {
     cartOverlay.classList.remove("transparentBcg");
     cartDOM.classList.remove("showCart");
   }
+  cartLogic() {
+    clearCartBtn.addEventListener("click", () => this.clearCart());
+  }
+  // cart functionality
+  clearCart() {
+    // console.log(this);
+    let cartItems = cart.map(item => item.id);
+    cartItems.forEach(id => this.removeItem(id));
+    while (cartContent.children.length > 0) {
+      cartContent.removeChild(cartContent.children[0]);
+    }
+    this.hideCart();
+  }
+  removeItem(id) {
+    cart = cart.filter(item => item.id !== id);
+    this.setCartValues(cart);
+    Storage.saveCart(cart);
+    let button = this.getSingleButton(id);
+    button.disabled = false;
+    button.innerHTML = `<i class="fas fa-shopping-cart"></i>add to bag`;
+  }
+  getSingleButton(id) {
+    return buttonsDOM.find(button => button.dataset.id === id);
+  }
   setupAPP() {
     cart = Storage.getCart();
     this.setCartValues(cart);
@@ -146,10 +170,10 @@ class UI {
 class Storage {
   // a static method is created: A static method can be used without instantiating the class.
   static saveProducts(products) {
-    localStorage.setItem("product", JSON.stringify(products));
+    localStorage.setItem("products", JSON.stringify(products));
   }
   static getProducts(id) {
-    let products = JSON.parse(localStorage.getItem("product"));
+    let products = JSON.parse(localStorage.getItem("products"));
     return products.find(product => product.id === id);
   }
   static saveCart(cart) {
@@ -165,7 +189,7 @@ class Storage {
 document.addEventListener("DOMContentLoaded", () => {
   const ui = new UI();
   const products = new Products();
-
+  ui.setupAPP();
   // get all products
   products
     .getProducts()
@@ -175,5 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(() => {
       ui.getBagButtons();
+      ui.cartLogic();
     });
 });
