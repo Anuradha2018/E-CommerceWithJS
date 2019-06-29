@@ -53,6 +53,7 @@ class UI {
           <h4>$${product.price}</h4>
         </article>`;
     });
+    productsDOM.innerHTML = result;
   }
 }
 //local storage
